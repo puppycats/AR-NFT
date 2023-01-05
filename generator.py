@@ -25,7 +25,8 @@ def randomize():
             image[i, j] = image[i-1, j-1] + [b, g, r]
     return image
 
-def generate_content(frame, type):
+def generate_content(type):
+    frame = randomize()
     if type == 'random':
         for i in range(384, 640):
             for j in range(384, 640):
@@ -33,11 +34,13 @@ def generate_content(frame, type):
                 g = np.random.randint(0, 255)
                 r = np.random.randint(0, 255)
                 frame[i, j] = [b, g, r]
+        cv2.imwrite('generated/random.png', frame)
         return frame
     elif type == 'merge':
         for i in range(384, 640):
             for j in range(384, 640):
                 frame[i, j] = (frame[i-1, j] + frame[i, j-1]) / 2
+        cv2.imwrite('generated/merge.png', frame)
         return frame
     elif type == 'random_bp':
         for i in range(384, 640, 8):
@@ -48,6 +51,7 @@ def generate_content(frame, type):
                 for k in range(i, i+8):
                     for l in range(j, j+8):
                         frame[k, l] = [b, g, r]
+        cv2.imwrite('generated/random_bp.png', frame)
         return frame
     elif type == 'merge_bp':
         for i in range(384, 640, 8):
@@ -55,34 +59,35 @@ def generate_content(frame, type):
                 for k in range(i, i+8):
                     for l in range(j, j+8):
                         frame[k, l] = (frame[i-1, j] + frame[i, j-1]) / 2
+        cv2.imwrite('generated/merge_bp.png', frame)
+        return frame
+    elif type == 'merge_plus':
+        a = np.random.randint(0, 10)
+        b = np.random.randint(0, 10)
+        if a > b:
+            a, b = b, a
+        if a == b:
+            if a > 0:
+                a -= 1
+            else:
+                b += 1
+        for i in range(384, 640):
+            for j in range(384, 640):
+                add = np.random.randint(a, b)
+                frame[i, j] = (frame[i-1, j] + frame[i, j-1]) / 2 + [add, add, add]
+        cv2.imwrite('generated/merge_plus.png', frame)
         return frame
 
-    
-'''
-out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc(*'XVID'), 20.0, (640,480))
 
-for i in range(0, 100):
-    frame = randomize()
-    frame = generate_content(frame)
-    out.write(frame)
-    cv2.imshow('frame',frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-out.release()
-'''
 
-frame = randomize()
-frame = generate_content(frame, 'random')
-cv2.imwrite('generated/random.png', frame)
+#frame = generate_content('random')
 
-frame = randomize()
-frame = generate_content(frame, 'merge')
-cv2.imwrite('generated/merge.png', frame)
+#frame = generate_content('merge')
 
-frame = randomize()
-frame = generate_content(frame, 'random_bp')
-cv2.imwrite('generated/random_bp.png', frame)
+#frame = generate_content('random_bp')
 
-frame = randomize()
-frame = generate_content(frame, 'merge_bp')
-cv2.imwrite('generated/merge_bp.png', frame)
+#frame = generate_content('merge_bp')
+
+frame = generate_content('merge_plus')
+
+#frame = generate_content('merge_plus_bp')
