@@ -2,20 +2,13 @@ import cv2
 import numpy as np
 
 def create_blank(width, height, rgb_color=(0, 0, 0)):
-    # Create black blank image
     image = np.zeros((height, width, 3), np.uint8)
-
-    # Since OpenCV uses BGR, convert the color first
-    color = tuple(reversed(rgb_color))
-    # Fill image with color
+    color = tuple(rgb_color)
     image[:] = color
-
     return image
 
-# Create new blank 300x300 red image
-
 def randomize():
-    width, height = 1024, 1024
+    width, height = 768, 768
     image = create_blank(width, height, rgb_color=(0, 0, 0))
     for i in range(0, width):
         for j in range(0, height):
@@ -27,9 +20,13 @@ def randomize():
 
 def generate_content(type):
     frame = randomize()
+    
+    c_s = 256
+    c_e = 512
+
     if type == 'random':
-        for i in range(384, 640):
-            for j in range(384, 640):
+        for i in range(c_s, c_e):
+            for j in range(c_s, c_e):
                 b = np.random.randint(0, 255)
                 g = np.random.randint(0, 255)
                 r = np.random.randint(0, 255)
@@ -37,14 +34,14 @@ def generate_content(type):
         cv2.imwrite('generated/random.png', frame)
         return frame
     elif type == 'merge':
-        for i in range(384, 640):
-            for j in range(384, 640):
+        for i in range(c_s, c_e):
+            for j in range(256, 512):
                 frame[i, j] = (frame[i-1, j] + frame[i, j-1]) / 2
         cv2.imwrite('generated/merge.png', frame)
         return frame
     elif type == 'random_bp':
-        for i in range(384, 640, 8):
-            for j in range(384, 640, 8):
+        for i in range(c_s, c_e, 8):
+            for j in range(c_s, c_e, 8):
                 b = np.random.randint(0, 255)
                 g = np.random.randint(0, 255)
                 r = np.random.randint(0, 255)
@@ -54,8 +51,8 @@ def generate_content(type):
         cv2.imwrite('generated/random_bp.png', frame)
         return frame
     elif type == 'merge_bp':
-        for i in range(384, 640, 8):
-            for j in range(384, 640, 8):
+        for i in range(c_s, c_e, 8):
+            for j in range(c_s, c_e, 8):
                 for k in range(i, i+8):
                     for l in range(j, j+8):
                         frame[k, l] = (frame[i-1, j] + frame[i, j-1]) / 2
@@ -71,8 +68,8 @@ def generate_content(type):
                 a -= 1
             else:
                 b += 1
-        for i in range(384, 640):
-            for j in range(384, 640):
+        for i in range(c_s, c_e):
+            for j in range(c_s, c_e):
                 add = np.random.randint(a, b)
                 frame[i, j] = (frame[i-1, j] + frame[i, j-1]) / 2 + [add, add, add]
         cv2.imwrite('generated/merge_plus.png', frame)
@@ -80,13 +77,13 @@ def generate_content(type):
 
 
 
-#frame = generate_content('random')
+frame = generate_content('random')
 
-#frame = generate_content('merge')
+frame = generate_content('merge')
 
-#frame = generate_content('random_bp')
+frame = generate_content('random_bp')
 
-#frame = generate_content('merge_bp')
+frame = generate_content('merge_bp')
 
 frame = generate_content('merge_plus')
 
