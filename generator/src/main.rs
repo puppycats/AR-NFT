@@ -9,7 +9,7 @@ const CS:usize = 256-1;
 const CE:usize = 512;
 
 fn main() {
-    let img = random_merge_plus();
+    let img = random_merge_plus_bp();
     
     save_image(img, &String::from("image.png"));
 }
@@ -114,3 +114,31 @@ fn random_merge_plus() -> Vec<Vec<Vec<u8>>> {
     }
     img
 }
+
+fn random_merge_plus_bp() -> Vec<Vec<Vec<u8>>> {
+    let mut img = random_bg();
+    let mut lb = rand::thread_rng().gen_range(0..=100);
+    let mut rb = rand::thread_rng().gen_range(0..=100);
+    if lb > rb {
+        mem::swap(&mut lb, &mut rb);
+    }
+    if lb == rb {
+        rb += 1;
+    }
+
+    for i in (CS..CE).step_by(8) {
+        for j in (CS..CE).step_by(8) {
+            let add = rand::thread_rng().gen_range(lb..=rb);
+            let r = ((img[i-1][j][0].wrapping_add(img[i][j-1][0]))/2).wrapping_add(add);
+            let g = ((img[i-1][j][1].wrapping_add(img[i][j-1][1]))/2).wrapping_add(add);
+            let b = ((img[i-1][j][2].wrapping_add(img[i][j-1][2]))/2).wrapping_add(add);
+            for k in i..i+8 {
+                for l in j..j+8 {
+                    img[k][l] = vec![r, g, b];
+                }
+            }
+        }
+    }
+    img
+}
+
