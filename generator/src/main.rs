@@ -8,7 +8,7 @@ const CS:usize = 256-1;
 const CE:usize = 512;
 
 fn main() {
-    let img = random();
+    let img = random_merge_bp();
     
     save_image(img, &String::from("image.png"));
 }
@@ -50,3 +50,46 @@ fn random() -> Vec<Vec<Vec<u8>>> {
     img
 }
 
+fn random_bp() -> Vec<Vec<Vec<u8>>> {
+    let mut img = random_bg();
+    for i in (CS..CE).step_by(8) {
+        for j in (CS..CE).step_by(8) {
+            let r = rand::thread_rng().gen_range(0..=255);
+            let g = rand::thread_rng().gen_range(0..=255);
+            let b = rand::thread_rng().gen_range(0..=255);
+            for k in i..i+8 {
+                for l in j..j+8 {
+                    img[k][l] = vec![r, g, b];
+                }
+            }
+        }
+    }
+    img
+}
+
+fn random_merge() -> Vec<Vec<Vec<u8>>> {
+    let mut img = random_bg();
+    for i in CS..CE {
+        for j in CS..CE {
+            img[i][j] = vec![(img[i-1][j][0].wrapping_add(img[i][j-1][0]))/2, (img[i-1][j][1].wrapping_add(img[i][j-1][1]))/2, (img[i-1][j][2].wrapping_add(img[i][j-1][2]))/2];
+        }
+    }
+    img
+}
+
+fn random_merge_bp() -> Vec<Vec<Vec<u8>>> {
+    let mut img = random_bg();
+    for i in (CS..CE).step_by(8) {
+        for j in (CS..CE).step_by(8) {
+            let r = (img[i-1][j][0].wrapping_add(img[i][j-1][0]))/2;
+            let g = (img[i-1][j][1].wrapping_add(img[i][j-1][1]))/2;
+            let b = (img[i-1][j][2].wrapping_add(img[i][j-1][2]))/2;
+            for k in i..i+8 {
+                for l in j..j+8 {
+                    img[k][l] = vec![r, g, b];
+                }
+            }
+        }
+    }
+    img
+}
