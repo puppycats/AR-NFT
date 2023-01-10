@@ -1,6 +1,7 @@
 use std::path::Path;
 use std::mem;
 use std::string::String;
+use std::thread;
 use rand::Rng;
 
 const WIDTH:usize = 768;
@@ -9,9 +10,37 @@ const CS:usize = 256-1;
 const CE:usize = 512;
 
 fn main() {
-    let img = random_merge_plus_bp();
-    
-    save_image(img, &String::from("image.png"));
+    let t1 = thread::spawn(|| {
+        let img = random();
+        save_image(img, &String::from("image0.png"));
+    });
+    let t2 = thread::spawn(|| {
+        let img = random_bp();
+        save_image(img, &String::from("image1.png"));
+    });
+    let t3 = thread::spawn(|| {
+        let img = random_merge();
+        save_image(img, &String::from("image2.png"));
+    });
+    let t4 = thread::spawn(|| {
+        let img = random_merge_bp();
+        save_image(img, &String::from("image3.png"));
+    });
+    let t5 = thread::spawn(|| {
+        let img = random_merge_plus();
+        save_image(img, &String::from("image4.png"));
+    });
+    let t6 = thread::spawn(|| {
+        let img = random_merge_plus_bp();
+        save_image(img, &String::from("image5.png"));
+    });
+
+    t1.join().unwrap();
+    t2.join().unwrap();
+    t3.join().unwrap();
+    t4.join().unwrap();
+    t5.join().unwrap();
+    t6.join().unwrap();
 }
 
 fn random_bg() -> Vec<Vec<Vec<u8>>> {
