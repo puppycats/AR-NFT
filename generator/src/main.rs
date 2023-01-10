@@ -1,6 +1,7 @@
 use std::path::Path;
-use rand::Rng;
+use std::mem;
 use std::string::String;
+use rand::Rng;
 
 const WIDTH:usize = 768;
 const HEIGHT:usize = 768;
@@ -8,7 +9,7 @@ const CS:usize = 256-1;
 const CE:usize = 512;
 
 fn main() {
-    let img = random_merge_bp();
+    let img = random_merge_plus();
     
     save_image(img, &String::from("image.png"));
 }
@@ -89,6 +90,26 @@ fn random_merge_bp() -> Vec<Vec<Vec<u8>>> {
                     img[k][l] = vec![r, g, b];
                 }
             }
+        }
+    }
+    img
+}
+
+fn random_merge_plus() -> Vec<Vec<Vec<u8>>> {
+    let mut img = random_bg();
+    let mut lb = rand::thread_rng().gen_range(0..=100);
+    let mut rb = rand::thread_rng().gen_range(0..=100);
+    if lb > rb {
+        mem::swap(&mut lb, &mut rb);
+    }
+    if lb == rb {
+        rb += 1;
+    }
+
+    for i in CS..CE {
+        for j in CS..CE {
+            let add = rand::thread_rng().gen_range(lb..=rb);
+            img[i][j] = vec![((img[i-1][j][0].wrapping_add(img[i][j-1][0]))/2).wrapping_add(add), ((img[i-1][j][1].wrapping_add(img[i][j-1][1]))/2).wrapping_add(add), ((img[i-1][j][2].wrapping_add(img[i][j-1][2]))/2).wrapping_add(add)];
         }
     }
     img
