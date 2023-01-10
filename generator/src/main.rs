@@ -1,7 +1,8 @@
-use std::path::Path;
-use std::mem;
-use std::string::String;
 use std::thread;
+use std::path::Path;
+use std::string::String;
+use std::time::Instant;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use rand::Rng;
 
 const WIDTH:usize = 768;
@@ -9,38 +10,29 @@ const HEIGHT:usize = 768;
 const CS:usize = 256-1;
 const CE:usize = 512;
 
-fn main() {
-    let t1 = thread::spawn(|| {
-        let img = random();
-        save_image(img, &String::from("image0.png"));
-    });
-    let t2 = thread::spawn(|| {
-        let img = random_bp();
-        save_image(img, &String::from("image1.png"));
-    });
-    let t3 = thread::spawn(|| {
-        let img = random_merge();
-        save_image(img, &String::from("image2.png"));
-    });
-    let t4 = thread::spawn(|| {
-        let img = random_merge_bp();
-        save_image(img, &String::from("image3.png"));
-    });
-    let t5 = thread::spawn(|| {
-        let img = random_merge_plus();
-        save_image(img, &String::from("image4.png"));
-    });
-    let t6 = thread::spawn(|| {
-        let img = random_merge_plus_bp();
-        save_image(img, &String::from("image5.png"));
-    });
+static GLOBAL_THREAD_COUNT: AtomicUsize = AtomicUsize::new(0);
 
-    t1.join().unwrap();
-    t2.join().unwrap();
-    t3.join().unwrap();
-    t4.join().unwrap();
-    t5.join().unwrap();
-    t6.join().unwrap();
+fn main() {
+    let amount = 100;
+    let start = Instant::now();
+    for i in 0..=amount {
+        GLOBAL_THREAD_COUNT.fetch_add(1, Ordering::SeqCst);
+        thread::spawn(move ||{
+            let img = random_bp();
+            let mut name = String::new();
+            name.push_str("img");
+            name.push_str(&i.to_string());
+            name.push_str(".png");
+
+            save_image(img, &name);            
+        });
+    }
+
+    while GLOBAL_THREAD_COUNT.load(Ordering::SeqCst) != 0 {
+         
+    }
+    let duration = start.elapsed();
+    println!("Time elapsed: {:?}", duration);
 }
 
 fn random_bg() -> Vec<Vec<Vec<u8>>> {
@@ -66,10 +58,10 @@ fn save_image(img: Vec<Vec<Vec<u8>>>, name: &str) {
             }
         }
     }
-    
-    image::save_buffer(&Path::new(name), &img2, WIDTH as u32, HEIGHT as u32, image::ColorType::Rgb8);
+    let _r = image::save_buffer(&Path::new(name), &img2, WIDTH as u32, HEIGHT as u32, image::ColorType::Rgb8);
+    GLOBAL_THREAD_COUNT.fetch_sub(1, Ordering::SeqCst);
 }
-
+/*
 fn random() -> Vec<Vec<Vec<u8>>> {
     let mut img = random_bg();
     for i in CS..CE {
@@ -79,6 +71,7 @@ fn random() -> Vec<Vec<Vec<u8>>> {
     }
     img
 }
+*/
 
 fn random_bp() -> Vec<Vec<Vec<u8>>> {
     let mut img = random_bg();
@@ -97,6 +90,7 @@ fn random_bp() -> Vec<Vec<Vec<u8>>> {
     img
 }
 
+/*
 fn random_merge() -> Vec<Vec<Vec<u8>>> {
     let mut img = random_bg();
     for i in CS..CE {
@@ -171,3 +165,4 @@ fn random_merge_plus_bp() -> Vec<Vec<Vec<u8>>> {
     img
 }
 
+*/
